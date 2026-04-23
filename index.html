@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Криптовалютный Скринер</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="assets/favicon.ico">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 Crypto Screener</h1>
+            <p>Отслеживание криптовалют в реальном времени</p>
+        </header>
+
+        <main>
+            <!-- Список монет -->
+            <section id="coin-list">
+                <h2>Топ-10 монет</h2>
+                <div id="coins-container"></div>
+            </section>
+
+            <!-- График цены -->
+            <section id="chart-container">
+                <h2>График цены</h2>
+                <div id="chart-canvas">
+                    <canvas id="price-chart"></canvas>
+                </div>
+                <select id="coin-selector">
+                    <option value="bitcoin">Bitcoin</option>
+                    <option value="ethereum">Ethereum</option>
+                </select>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
