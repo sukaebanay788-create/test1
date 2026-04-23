@@ -21,16 +21,28 @@
                 <div id="coins-container"></div>
             </section>
 
-            <!-- График цены -->
+            <!-- График цены с выбором интервала -->
             <section id="chart-container">
                 <h2>График цены</h2>
+                <div class="chart-controls">
+                    <select id="coin-selector">
+                        <option value="bitcoin">Bitcoin</option>
+                        <option value="ethereum">Ethereum</option>
+                        <option value="binancecoin">BNB</option>
+                        <option value="solana">Solana</option>
+                        <option value="cardano">Cardano</option>
+                    </select>
+                    <select id="interval-selector">
+                        <option value="24">24 часа</option>
+                        <option value="7" selected>7 дней</option>
+                        <option value="30">30 дней</option>
+                        <option value="365">1 год</option>
+                        <option value="max">Весь период</option>
+                    </select>
+                </div>
                 <div id="chart-canvas">
                     <canvas id="price-chart"></canvas>
                 </div>
-                <select id="coin-selector">
-                    <option value="bitcoin">Bitcoin</option>
-                    <option value="ethereum">Ethereum</option>
-                </select>
             </section>
         </main>
     </div>
