@@ -1,120 +1,86 @@
-:root {
-    --primary: #3a86ff;
-    --secondary: #8338ec;
-    --bg: #f8f9fa;
-    --text: #212529;
-    --card: #ffffff;
-    --border: #dee2e6;
-}
+/* ... (предыдущие стили остаются без изменений) ... */
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.6;
-}
-
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-header {
-    text-align: center;
-    padding: 30px 0;
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    color: white;
-    border-radius: 15px;
-    margin-bottom: 30px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-h1 {
-    font-size: 2.5em;
-    margin-bottom: 10px;
-}
-
-section {
-    background: var(--card);
-    border-radius: 10px;
-    padding: 25px;
-    margin-bottom: 25px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-}
-
-#coin-list h2, #chart-container h2 {
-    margin-bottom: 20px;
-    color: var(--primary);
-}
-
-.coin-card {
+.chart-controls {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    margin-bottom: 10px;
-    transition: transform 0.2s;
-}
-
-.coin-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-.coin-info {
-    display: flex;
-    align-items: center;
-}
-
-.coin-symbol {
-    font-weight: bold;
-    margin-left: 10px;
-}
-
-.coin-price {
-    font-size: 1.2em;
-    font-weight: bold;
-}
-
-#chart-canvas {
-    position: relative;
-    height: 400px;
+    gap: 15px;
     margin-bottom: 20px;
+    flex-wrap: wrap;
 }
 
-#coin-selector {
-    width: 100%;
-    padding: 10px;
+.chart-controls select {
+    flex: 1;
+    min-width: 200px;
+    padding: 12px;
     border-radius: 8px;
     border: 1px solid var(--border);
     background: white;
     font-size: 1em;
+    cursor: pointer;
+    transition: border-color 0.3s;
+}
+
+.chart-controls select:hover {
+    border-color: var(--primary);
+}
+
+.coin-price-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.coin-change {
+    font-size: 0.9em;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.coin-change.positive {
+    color: #10b981;
+    background-color: rgba(16, 185, 129, 0.1);
+}
+
+.coin-change.negative {
+    color: #ef4444;
+    background-color: rgba(239, 68, 68, 0.1);
+}
+
+.coin-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.coin-card:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 400px;
+    font-size: 1.2em;
+    color: var(--primary);
+}
+
+.error {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 400px;
+    font-size: 1.2em;
+    color: var(--secondary);
 }
 
 @media (max-width: 768px) {
-    .container {
-        padding: 10px;
-    }
-    
-    header {
-        padding: 20px;
-    }
-    
-    h1 {
-        font-size: 1.8em;
-    }
-    
-    .coin-card {
+    .chart-controls {
         flex-direction: column;
-        text-align: center;
+    }
+    
+    .chart-controls select {
+        width: 100%;
     }
 }
