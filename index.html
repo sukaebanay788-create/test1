@@ -3,51 +3,341 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Криптовалютный Скринер</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="icon" href="assets/favicon.ico">
+    <title>Binance Liquidation Tracker (Public API)</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            background: #1e222d;
+            color: #e0e0e0;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: #2a2e39;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ff4d4d;
+        }
+        .status-dot.live {
+            background: #00cc66;
+            box-shadow: 0 0 8px #00cc66;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            background: #f0b90b;
+            color: #1e222d;
+        }
+        button:hover {
+            background: #e5a800;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: #1e222d;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #3a3f4e;
+        }
+        th {
+            background: #131722;
+        }
+        .sell {
+            color: #ff4d4d;
+            font-weight: bold;
+        }
+        .buy {
+            color: #00cc66;
+            font-weight: bold;
+        }
+        .info-message {
+            color: #aaa;
+            font-style: italic;
+        }
+        .debug-panel {
+            background: #131722;
+            padding: 10px;
+            height: 120px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            margin-top: 15px;
+            border-radius: 4px;
+            color: #ccc;
+        }
+        input {
+            padding: 6px;
+            border-radius: 4px;
+            border: 1px solid #3a3f4e;
+            background: #1e222d;
+            color: #e0e0e0;
+        }
+        .error-hint {
+            background: #ff4d4d22;
+            border: 1px solid #ff4d4d;
+            padding: 8px;
+            border-radius: 4px;
+            margin-top: 5px;
+            font-size: 0.9em;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>🚀 Crypto Screener</h1>
-            <p>Отслеживание криптовалют в реальном времени</p>
-        </header>
+        <h2>📊 Binance Liquidation Tracker (Public API)</h2>
+        <div class="status">
+            <div class="status-dot" id="statusDot"></div>
+            <span id="statusText">Подключение...</span>
+            <span id="lastDataTime" style="margin-left: auto; color: #aaa;"></span>
+        </div>
 
-        <main>
-            <!-- Список монет -->
-            <section id="coin-list">
-                <h2>Топ-10 монет</h2>
-                <div id="coins-container"></div>
-            </section>
+        <div class="button-group">
+            <input type="text" id="historySymbol" placeholder="Символ (BTCUSDT)" value="BTCUSDT" style="width:120px;">
+            <button onclick="loadHistoryForSymbol()">📥 Загрузить историю</button>
+            <input type="number" id="minTotal" placeholder="Мин. сумма $" step="1000" style="width:120px;">
+            <input type="text" id="symbolFilter" placeholder="Фильтр символа" style="width:150px;">
+            <button onclick="applyFilters()">Применить</button>
+            <button onclick="resetFilters()">Сбросить</button>
+        </div>
+        <div id="errorHint" style="display:none;"></div>
 
-            <!-- График цены с выбором интервала -->
-            <section id="chart-container">
-                <h2>График цены</h2>
-                <div class="chart-controls">
-                    <select id="coin-selector">
-                        <option value="bitcoin">Bitcoin</option>
-                        <option value="ethereum">Ethereum</option>
-                        <option value="binancecoin">BNB</option>
-                        <option value="solana">Solana</option>
-                        <option value="cardano">Cardano</option>
-                    </select>
-                    <select id="interval-selector">
-                        <option value="24">24 часа</option>
-                        <option value="7" selected>7 дней</option>
-                        <option value="30">30 дней</option>
-                        <option value="365">1 год</option>
-                        <option value="max">Весь период</option>
-                    </select>
-                </div>
-                <div id="chart-canvas">
-                    <canvas id="price-chart"></canvas>
-                </div>
-            </section>
-        </main>
+        <table>
+            <thead>
+                <tr>
+                    <th>Символ</th>
+                    <th>Цена</th>
+                    <th>Объем</th>
+                    <th>Сумма ($)</th>
+                    <th>Сторона</th>
+                    <th>Время (UTC)</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <tr><td colspan="6" style="text-align:center;">Загрузка истории...</td></tr>
+            </tbody>
+        </table>
+
+        <div class="debug-panel" id="debugLog">
+            <div>Журнал событий:</div>
+        </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="script.js"></script>
+    <script>
+        let allLiquidations = [];
+        let minTotalFilter = 0;
+        let symbolFilter = '';
+        let ws = null;
+        let lastWsDataTime = null;
+        const statusText = document.getElementById('statusText');
+        const statusDot = document.getElementById('statusDot');
+        const lastDataTimeSpan = document.getElementById('lastDataTime');
+        const debugLog = document.getElementById('debugLog');
+        const errorHint = document.getElementById('errorHint');
+
+        function log(message, type = 'info') {
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.textContent = `[${time}] ${message}`;
+            if (type === 'error') entry.style.color = '#ff4d4d';
+            else if (type === 'warn') entry.style.color = '#f0b90b';
+            debugLog.appendChild(entry);
+            debugLog.scrollTop = debugLog.scrollHeight;
+        }
+
+        // Загрузка истории через ПУБЛИЧНЫЙ эндпоинт allForceOrders
+        async function loadHistoryForSymbol() {
+            const symbol = document.getElementById('historySymbol').value.toUpperCase().trim() || 'BTCUSDT';
+            errorHint.style.display = 'none';
+            try {
+                // ✅ Публичный эндпоинт (без авторизации)
+                const url = `https://fapi.binance.com/fapi/v1/allForceOrders?symbol=${symbol}&limit=20`;
+                log(`Запрос: ${url}`, 'info');
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    log(`HTTP ${response.status}: ${response.statusText}`, 'error');
+                    console.error('Response body:', errorText);
+                    
+                    if (response.status === 401) {
+                        errorHint.innerHTML = '⚠️ <b>Ошибка 401:</b> Возможно, ваш регион ограничен. Попробуйте использовать VPN или прокси.';
+                        errorHint.style.display = 'block';
+                    } else if (response.status === 451) {
+                        errorHint.innerHTML = '⚠️ <b>Ошибка 451:</b> Доступ запрещён по юридическим причинам (геоблокировка). Попробуйте VPN.';
+                        errorHint.style.display = 'block';
+                    }
+                    return;
+                }
+                
+                const orders = await response.json();
+                console.log('allForceOrders ответ:', orders);
+                
+                if (!Array.isArray(orders)) {
+                    log('Ответ не является массивом', 'error');
+                    console.error('Ответ:', orders);
+                    return;
+                }
+                
+                // Добавляем в общий массив
+                const existingIds = new Set(allLiquidations.map(l => l.orderId));
+                let added = 0;
+                orders.forEach(order => {
+                    if (!existingIds.has(order.orderId)) {
+                        allLiquidations.push({
+                            orderId: order.orderId,
+                            symbol: order.symbol,
+                            price: parseFloat(order.price),
+                            quantity: parseFloat(order.origQty),
+                            total: Math.round(parseFloat(order.price) * parseFloat(order.origQty)),
+                            side: order.side,
+                            timestamp: new Date(order.time)
+                        });
+                        added++;
+                    }
+                });
+                
+                allLiquidations.sort((a, b) => b.timestamp - a.timestamp);
+                if (added > 0) {
+                    log(`✅ Загружено ${added} ликвидаций для ${symbol}`, 'info');
+                } else {
+                    log(`Нет новых ликвидаций для ${symbol}`, 'warn');
+                }
+                renderTable();
+            } catch (error) {
+                log(`Ошибка: ${error.message}`, 'error');
+                console.error('Fetch error:', error);
+            }
+        }
+
+        function connectWebSocket() {
+            if (ws && ws.readyState < 2) ws.close();
+
+            ws = new WebSocket('wss://fstream.binance.com/ws/!forceOrder@arr');
+            
+            ws.onopen = () => {
+                statusDot.classList.add('live');
+                statusText.textContent = 'WebSocket активен (ожидание ликвидаций)';
+                log('WebSocket подключен', 'info');
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const msg = JSON.parse(event.data);
+                    if (msg.e === 'forceOrder' && msg.o) {
+                        const o = msg.o;
+                        const liquidation = {
+                            orderId: o.i,
+                            symbol: o.s,
+                            price: parseFloat(o.p),
+                            quantity: parseFloat(o.q),
+                            total: Math.round(parseFloat(o.p) * parseFloat(o.q)),
+                            side: o.S,
+                            timestamp: new Date(o.T)
+                        };
+                        
+                        if (!allLiquidations.some(l => l.orderId === liquidation.orderId)) {
+                            allLiquidations.unshift(liquidation);
+                            if (allLiquidations.length > 100) allLiquidations.pop();
+                            lastWsDataTime = new Date();
+                            lastDataTimeSpan.textContent = `WS: ${lastWsDataTime.toLocaleTimeString()}`;
+                            log(`Ликвидация: ${o.s} ${o.S} $${liquidation.total.toLocaleString()}`, 'info');
+                            renderTable();
+                        }
+                    }
+                } catch (e) {
+                    log(`Ошибка парсинга: ${e.message}`, 'error');
+                }
+            };
+
+            ws.onerror = (e) => {
+                statusDot.classList.remove('live');
+                statusText.textContent = 'Ошибка WebSocket';
+                log('Ошибка WebSocket', 'error');
+            };
+
+            ws.onclose = (e) => {
+                statusDot.classList.remove('live');
+                statusText.textContent = `Закрыт (код ${e.code}). Переподключение...`;
+                log(`WebSocket закрыт: код ${e.code}`, 'warn');
+                setTimeout(connectWebSocket, 3000);
+            };
+        }
+
+        function renderTable() {
+            let filtered = allLiquidations;
+            if (minTotalFilter > 0) filtered = filtered.filter(l => l.total >= minTotalFilter);
+            if (symbolFilter) filtered = filtered.filter(l => l.symbol.includes(symbolFilter));
+            
+            const tbody = document.getElementById('tableBody');
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#aaa;">Нет данных. Загрузите историю или дождитесь ликвидаций.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = filtered.map(l => {
+                const sideClass = l.side === 'SELL' ? 'sell' : 'buy';
+                const sideText = l.side === 'SELL' ? 'SHORT' : 'LONG';
+                return `
+                    <tr>
+                        <td><strong>${l.symbol}</strong></td>
+                        <td>${l.price.toFixed(4)}</td>
+                        <td>${l.quantity.toFixed(4)}</td>
+                        <td>$${l.total.toLocaleString()}</td>
+                        <td class="${sideClass}">${sideText}</td>
+                        <td>${l.timestamp.toISOString().replace('T', ' ').substring(0, 19)}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function applyFilters() {
+            minTotalFilter = parseFloat(document.getElementById('minTotal').value) || 0;
+            symbolFilter = document.getElementById('symbolFilter').value.toUpperCase().trim();
+            renderTable();
+        }
+
+        function resetFilters() {
+            document.getElementById('minTotal').value = '';
+            document.getElementById('symbolFilter').value = '';
+            minTotalFilter = 0;
+            symbolFilter = '';
+            renderTable();
+        }
+
+        window.addEventListener('load', async () => {
+            log('Загрузка страницы...', 'info');
+            await loadHistoryForSymbol();
+            connectWebSocket();
+            setInterval(() => {
+                if (lastWsDataTime) {
+                    lastDataTimeSpan.textContent = `WS: ${lastWsDataTime.toLocaleTimeString()}`;
+                }
+            }, 5000);
+        });
+    </script>
 </body>
 </html>
